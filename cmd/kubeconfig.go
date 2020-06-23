@@ -17,63 +17,62 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2instanceconnect"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/spf13/cobra"
 )
 
-// instancesSendKeyCmd represents the instancesSendKey command
-var instancesSendKeyCmd = &cobra.Command{
-	Use:   "send-key",
-	Short: "Send SSH public key to specified instance",
+// kubeconfigCmd represents the kubeconfig command
+var kubeconfigCmd = &cobra.Command{
+	Use:   "kubeconfig",
+	Short: "Download kubeconfig and export it to KUBECONFIG env",
 	Run: func(cmd *cobra.Command, args []string) {
-		id, err := cmd.Flags().GetString("instance-id")
-		if err != nil {
-			panic(err)
-		}
-
-		session := ec2instanceconnect.New(session.New(&aws.Config{
+		session := session.Must(session.NewSession(&aws.Config{
 			Region: aws.String("us-east-1"),
 		}))
+		downloader := s3manager.NewDownloader(session)
 
 		homedir, err := os.UserHomeDir()
 		if err != nil {
 			panic(err)
 		}
-		pkeydir := fmt.Sprintf("%s/.ssh/id_rsa.pub", homedir)
-		pkey, err := ioutil.ReadFile(pkeydir)
+		kubedir := fmt.Sprintf("%s/.kube", homedir)
+		filename := fmt.Sprintf("%s/kubeconfig-di-aws", kubedir)
+		f, err := os.Create(filename)
 		if err != nil {
 			panic(err)
-		}
-		input := &ec2instanceconnect.SendSSHPublicKeyInput{
-			AvailabilityZone: aws.String("us-east-1a"),
-			InstanceId:       aws.String(id),
-			InstanceOSUser:   aws.String("ubuntu"),
-			SSHPublicKey:     aws.String(string(pkey)),
 		}
 
-		result, err := session.SendSSHPublicKey(input)
+		_, err = downloader.Download(f, &s3.GetObjectInput{
+			Bucket: aws.String("di-kubeconfig"),
+			Key:    aws.String("kubeconfig"),
+		})
+
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(result)
+
+		fmt.Println("Run this:")
+		fmt.Println("")
+		fmt.Println(fmt.Sprintf("export KUBECONFIG=%s", filename))
+		fmt.Println("")
 	},
 }
 
 func init() {
-	instancesCmd.AddCommand(instancesSendKeyCmd)
+	rootCmd.AddCommand(kubeconfigCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// instancesSendKeyCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// kubeconfigCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	instancesSendKeyCmd.Flags().StringP("instance-id", "i", "", "AWS instance ID")
+	// kubeconfigCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
