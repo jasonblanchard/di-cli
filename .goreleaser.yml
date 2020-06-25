@@ -28,3 +28,10 @@ changelog:
     exclude:
     - '^docs:'
     - '^test:'
+brews:
+  name: di
+  github:
+    owner: jasonblanchard
+    name: di-cli-homebrew
+  url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
+  folder: Formula
