@@ -30,7 +30,7 @@ changelog:
     - '^test:'
 brews:
   -
-    name: di
+    name: di-cli
     github:
       owner: jasonblanchard
       name: di-cli-homebrew
