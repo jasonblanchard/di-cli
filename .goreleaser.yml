@@ -36,3 +36,5 @@ brews:
       name: di-cli-homebrew
     url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
     folder: Formula
+    install: |
+      bin.install "di"
