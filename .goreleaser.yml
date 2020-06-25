@@ -37,4 +37,5 @@ brews:
     url_template: "https://github.com/jasonblanchard/di-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     folder: Formula
     install: |
+      system "cp", "di-cli", "di"
       bin.install "di"
