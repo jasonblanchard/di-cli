@@ -56,10 +56,9 @@ var kubeconfigCmd = &cobra.Command{
 			panic(err)
 		}
 
-		fmt.Println("Run this:")
-		fmt.Println("")
 		fmt.Println(fmt.Sprintf("export KUBECONFIG=%s", filename))
-		fmt.Println("")
+		fmt.Println("# Run this command to configure your shell:")
+		fmt.Println("# eval \"$(di kubeconfig)\"")
 	},
 }
 
