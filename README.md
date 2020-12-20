@@ -2,5 +2,6 @@
 
 ## Installation
 ```
-brew install jasonblanchard/di-cli/di
+brew tap jasonblanchard/homebrew-di-cli
+brew install di-cli
 ```
