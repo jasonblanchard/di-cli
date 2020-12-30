@@ -19,7 +19,6 @@ limitations under the License.
 import (
 	"fmt"
 	"os"
-
 	"text/tabwriter"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -58,15 +57,24 @@ var instancesListCmd = &cobra.Command{
 			panic(err)
 		}
 
-		// TODO: Iterate over these
-		instance := result.Reservations[0].Instances[0]
-		id := instance.InstanceId
-		publicHost := instance.NetworkInterfaces[0].Association.PublicDnsName
-		publicIP := instance.NetworkInterfaces[0].Association.PublicIp
-
 		writer := tabwriter.NewWriter(os.Stdout, 0, 9, 5, ' ', tabwriter.TabIndent)
-		fmt.Fprintln(writer, "ID\tHOST\tIP")
-		fmt.Fprintf(writer, "%v\t%v\t%v", *id, *publicHost, *publicIP)
+		fmt.Fprintln(writer, "ID\tSTATE\tHOST\tIP")
+
+		for _, reservation := range result.Reservations {
+			for _, instance := range reservation.Instances {
+				id := instance.InstanceId
+				state := *instance.State.Name
+				var publicHost string
+				var publicIP string
+				if len(instance.NetworkInterfaces) > 0 {
+					publicHost = *instance.NetworkInterfaces[0].Association.PublicDnsName
+					publicIP = *instance.NetworkInterfaces[0].Association.PublicIp
+				}
+				fmt.Fprintf(writer, "%v\t%v\t%v\t%v", *id, state, publicHost, publicIP)
+				fmt.Fprint(writer, "\n")
+			}
+		}
+
 		writer.Flush()
 		fmt.Println()
 	},
